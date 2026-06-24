@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户评价 · 山河故楼</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <style>
+        .review-page {
+            min-height: calc(100vh - 200px);
+            background: linear-gradient(160deg, #f8f4ee 0%, #efe8df 100%);
+            padding: 24px 0 40px;
+        }
+
+        .review-page .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .review-header {
+            margin-bottom: 24px;
+        }
+
+        .review-header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #3d2c1b;
+            font-family: 'STSong', 'SimSun', serif;
+        }
+
+        .review-header h1 i {
+            color: #b8956a;
+            margin-right: 10px;
+        }
+
+        .review-header p {
+            color: #9a8a7a;
+            font-size: 0.95rem;
+            margin-top: 2px;
+        }
+
+        .review-header .stats-row {
+            display: flex;
+            gap: 32px;
+            margin-top: 12px;
+        }
+
+        .review-header .stats-row .stat-item {
+            text-align: center;
+        }
+
+        .review-header .stats-row .stat-item .num {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #b8956a;
+            display: block;
+        }
+
+        .review-header .stats-row .stat-item .label {
+            font-size: 0.75rem;
+            color: #9a8a7a;
+        }
+
+        .post-review {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            padding: 22px 26px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.02);
+            margin-bottom: 24px;
+        }
+
+        .post-review .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .post-review .post-header .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #b8956a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #fff;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .post-review .post-header .name {
+            color: #3d2c1b;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .post-review .post-header .hint {
+            color: #9a8a7a;
+            font-size: 0.85rem;
+        }
+
+        .post-review .post-header .hint a {
+            color: #b8956a;
+            text-decoration: none;
+        }
+
+        .post-review .post-header .hint a:hover {
+            text-decoration: underline;
+        }
+
+        .review-form .form-row {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .review-form select {
+            flex: 2;
+            min-width: 140px;
+            padding: 9px 14px;
+            border: 1px solid rgba(184, 149, 106, 0.12);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            color: #3d2c1b;
+            font-size: 0.85rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .review-form select:focus {
+            border-color: #b8956a;
+            box-shadow: 0 0 0 3px rgba(184, 149, 106, 0.04);
+        }
+
+        .review-form select option {
+            background: #fff;
+        }
+
+        .review-form .rating-select {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .review-form .rating-select .label {
+            color: #9a8a7a;
+            font-size: 0.82rem;
+        }
+
+        .review-form .rating-select .stars {
+            display: flex;
+            gap: 3px;
+        }
+
+        .review-form .rating-select .stars i {
+            font-size: 1.1rem;
+            color: #d5c8b8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .review-form .rating-select .stars i:hover,
+        .review-form .rating-select .stars i.active {
+            color: #f39c12;
+            transform: scale(1.1);
+        }
+
+        .review-form textarea {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid rgba(184, 149, 106, 0.12);
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            color: #3d2c1b;
+            font-size: 0.85rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 60px;
+            max-height: 140px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .review-form textarea:focus {
+            border-color: #b8956a;
+            box-shadow: 0 0 0 3px rgba(184, 149, 106, 0.04);
+            background: rgba(255, 255, 255, 0.8);
+        }
+
+        .review-form textarea::placeholder {
+            color: #c0b0a0;
+        }
+
+        .review-form .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-submit {
+            padding: 8px 24px;
+            background: #b8956a;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-submit:hover {
+            background: #a8845a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(184, 149, 106, 0.2);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .btn-cancel {
+            padding: 8px 18px;
+            background: rgba(255, 255, 255, 0.3);
+            border: 1px solid rgba(184, 149, 106, 0.1);
+            border-radius: 10px;
+            color: #9a8a7a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 0.85rem;
+        }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+        }
+
+        .filter-bar .search-wrap {
+            flex: 1;
+            min-width: 140px;
+            position: relative;
+        }
+
+        .filter-bar .search-wrap input {
+            width: 100%;
+            padding: 7px 12px 7px 34px;
+            border: 1px solid rgba(184, 149, 106, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            color: #3d2c1b;
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .filter-bar .search-wrap input:focus {
+            border-color: #b8956a;
+            box-shadow: 0 0 0 3px rgba(184, 149, 106, 0.04);
+        }
+
+        .filter-bar .search-wrap input::placeholder {
+            color: #c0b0a0;
+        }
+
+        .filter-bar .search-wrap i {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #c0b0a0;
+            font-size: 0.8rem;
+        }
+
+        .filter-bar select {
+            padding: 7px 12px;
+            border: 1px solid rgba(184, 149, 106, 0.1);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.5);
+            color: #3d2c1b;
+            font-size: 0.82rem;
+            font-family: inherit;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-bar select:focus {
+            border-color: #b8956a;
+        }
+
+        .filter-bar select option {
+            background: #fff;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .review-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 14px;
+            padding: 18px 20px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .review-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+        }
+
+        .review-card .card-top {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .review-card .card-top .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #b8956a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #fff;
+            flex-shrink: 0;
+            font-size: 0.75rem;
+        }
+
+        .review-card .card-top .info {
+            flex: 1;
+        }
+
+        .review-card .card-top .info .name {
+            color: #3d2c1b;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+
+        .review-card .card-top .info .time {
+            color: #c0b0a0;
+            font-size: 0.7rem;
+        }
+
+        /* ===== 修改：景点名称变为可点击链接 ===== */
+        .review-card .building-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-weight: 500;
+            font-size: 0.82rem;
+            margin-bottom: 4px;
+        }
+        .review-card .building-tag a {
+            color: #b8956a;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .review-card .building-tag a:hover {
+            color: #a8845a;
+            text-decoration: underline;
+        }
+        .review-card .building-tag .dynasty {
+            color: #c0b0a0;
+            font-weight: 400;
+            font-size: 0.7rem;
+        }
+
+        .review-card .rating-stars {
+            display: flex;
+            gap: 2px;
+            margin-bottom: 6px;
+        }
+
+        .review-card .rating-stars i {
+            font-size: 0.75rem;
+            color: #f39c12;
+        }
+
+        .review-card .rating-stars i.empty {
+            color: #e0d5c8;
+        }
+
+        .review-card .review-text {
+            color: #5a4a3a;
+            line-height: 1.6;
+            font-size: 0.85rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .review-card .review-text.expanded {
+            -webkit-line-clamp: unset;
+            overflow: visible;
+        }
+
+        .review-card .read-more {
+            background: none;
+            border: none;
+            color: #b8956a;
+            cursor: pointer;
+            font-size: 0.75rem;
+            padding: 2px 0;
+            font-family: inherit;
+            margin-top: 2px;
+        }
+
+        .review-card .read-more:hover {
+            color: #a8845a;
+        }
+
+        .review-card .card-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(184, 149, 106, 0.06);
+        }
+
+        .review-card .card-actions button {
+            background: none;
+            border: none;
+            color: #9a8a7a;
+            cursor: pointer;
+            font-size: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .review-card .card-actions button:hover {
+            color: #5a4a3a;
+            background: rgba(184, 149, 106, 0.04);
+        }
+
+        .review-card .card-actions button.liked {
+            color: #c0392b;
+        }
+
+        .review-card .card-actions .del:hover {
+            color: #c0392b;
+            background: rgba(192, 57, 43, 0.04);
+        }
+
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px 20px;
+            color: #c0b0a0;
+        }
+
+        .empty-state i {
+            font-size: 2.2rem;
+            display: block;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        .load-more-wrap {
+            text-align: center;
+            margin-top: 24px;
+        }
+
+        .load-more-wrap button {
+            padding: 8px 32px;
+            background: rgba(255, 255, 255, 0.4);
+            border: 1px solid rgba(184, 149, 106, 0.1);
+            border-radius: 30px;
+            color: #9a8a7a;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            font-size: 0.82rem;
+        }
+
+        .load-more-wrap button:hover {
+            background: rgba(255, 255, 255, 0.8);
+            color: #5a4a3a;
+        }
+
+        @media (max-width: 768px) {
+            .review-page {
+                padding: 16px 0 24px;
+            }
+            .review-page .container {
+                padding: 0 16px;
+            }
+            .review-header h1 {
+                font-size: 1.4rem;
+            }
+            .review-header .stats-row {
+                gap: 20px;
+            }
+            .post-review {
+                padding: 16px 18px;
+            }
+            .review-form .form-row {
+                flex-direction: column;
+            }
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+                padding: 10px 14px;
+            }
+            .filter-bar .search-wrap {
+                min-width: unset;
+            }
+            .reviews-grid {
+                grid-template-columns: 1fr;
+            }
+            .review-card {
+                padding: 14px 16px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .review-header h1 {
+                font-size: 1.2rem;
+            }
+            .post-review {
+                padding: 12px 14px;
+            }
+            .review-card .card-actions {
+                flex-wrap: wrap;
+            }
+        }
+
+        body.dark-theme .review-page {
+            background: linear-gradient(160deg, #0a0a1a 0%, #1a1a2e 100%);
+        }
+
+        body.dark-theme .review-header h1 {
+            color: #f5f0ea;
+        }
+
+        body.dark-theme .review-header p {
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        body.dark-theme .post-review {
+            background: rgba(26, 26, 46, 0.85);
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        body.dark-theme .post-review .post-header .name {
+            color: #f5f0ea;
+        }
+
+        body.dark-theme .review-form select,
+        body.dark-theme .review-form textarea {
+            background: rgba(255, 255, 255, 0.04);
+            color: #f5f0ea;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        body.dark-theme .review-form select:focus,
+        body.dark-theme .review-form textarea:focus {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: #c9a87b;
+        }
+
+        body.dark-theme .filter-bar {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        body.dark-theme .filter-bar .search-wrap input,
+        body.dark-theme .filter-bar select {
+            background: rgba(255, 255, 255, 0.04);
+            color: #f5f0ea;
+            border-color: rgba(255, 255, 255, 0.06);
+        }
+
+        body.dark-theme .filter-bar .search-wrap input:focus,
+        body.dark-theme .filter-bar select:focus {
+            border-color: #c9a87b;
+        }
+
+        body.dark-theme .review-card {
+            background: rgba(26, 26, 46, 0.85);
+            border-color: rgba(255, 255, 255, 0.04);
+        }
+
+        body.dark-theme .review-card .card-top .info .name {
+            color: #f5f0ea;
+        }
+
+        body.dark-theme .review-card .review-text {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        body.dark-theme .review-card .card-actions button {
+            color: rgba(255, 255, 255, 0.3);
+        }
+
+        body.dark-theme .review-card .card-actions button:hover {
+            color: rgba(255, 255, 255, 0.6);
+        }
+    </style>
+</head>
+<body>
+
+<header class="navbar" id="mainNavbar">
+    <div class="container navbar-content">
+        <div class="navbar-brand">
+            <a href="index.html" class="brand-link">
+                <i class="fas fa-landmark"></i>
+                <span>山河故楼</span>
+            </a>
+        </div>
+        <nav class="navbar-nav">
+            <a href="index.html" class="nav-link">首页</a>
+            <a href="smart-navigation.html" class="nav-link">智能导航</a>
+            <a href="buildings.html" class="nav-link active">用户评价</a>
+            <a href="ai-assistant.html" class="nav-link">AI助手</a>
+            <a href="profile.html" class="nav-link" id="navProfileLink">个人中心</a>
+        </nav>
+        <div class="navbar-actions">
+            <div id="navUserStatus" class="nav-user-status"></div>
+            <button class="theme-toggle" title="切换主题" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="review-page">
+    <div class="container">
+        <div class="review-header">
+            <h1><i class="fas fa-comment-dots"></i> 用户评价</h1>
+            <p>分享您的古建筑游览体验，为每座楼阁留下足迹</p>
+            <div class="stats-row">
+                <div class="stat-item">
+                    <span class="num" id="totalReviews">0</span>
+                    <span class="label">总评价</span>
+                </div>
+                <div class="stat-item">
+                    <span class="num" id="totalLikes">0</span>
+                    <span class="label">总点赞</span>
+                </div>
+                <div class="stat-item">
+                    <span class="num" id="totalUsers">0</span>
+                    <span class="label">评价用户</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="post-review">
+            <div class="post-header">
+                <div class="avatar" id="postAvatar">?</div>
+                <div class="name" id="postName">游客</div>
+                <div class="hint" id="loginHint">
+                    <a href="login.html">登录</a> 后发表评价
+                </div>
+            </div>
+
+            <form class="review-form" id="reviewForm" onsubmit="submitReview(event)">
+                <div class="form-row">
+                    <select id="reviewBuilding" required>
+                        <option value="">选择建筑...</option>
+                    </select>
+                    <div class="rating-select">
+                        <span class="label">评分：</span>
+                        <div class="stars" id="starSelector">
+                            <i data-value="1" class="far fa-star" onclick="setRating(1)"></i>
+                            <i data-value="2" class="far fa-star" onclick="setRating(2)"></i>
+                            <i data-value="3" class="far fa-star" onclick="setRating(3)"></i>
+                            <i data-value="4" class="far fa-star" onclick="setRating(4)"></i>
+                            <i data-value="5" class="far fa-star" onclick="setRating(5)"></i>
+                        </div>
+                        <input type="hidden" id="reviewRating" value="0" required>
+                    </div>
+                </div>
+                <textarea id="reviewContent" placeholder="分享您的游览感受、历史感悟..." required minlength="5"></textarea>
+                <div class="form-actions">
+                    <button type="submit" class="btn-submit" id="submitBtn">
+                        <i class="fas fa-paper-plane"></i> 发布评价
+                    </button>
+                    <button type="button" class="btn-cancel" onclick="clearForm()">清空</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="filter-bar">
+            <div class="search-wrap">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="搜索建筑或评价..." oninput="applyFilters()">
+            </div>
+            <select id="sortSelect" onchange="applyFilters()">
+                <option value="newest">最新发布</option>
+                <option value="oldest">最早发布</option>
+                <option value="mostLiked">最多点赞</option>
+                <option value="highestRated">最高评分</option>
+            </select>
+            <select id="filterBuilding" onchange="applyFilters()">
+                <option value="all">全部建筑</option>
+            </select>
+        </div>
+
+        <div class="reviews-grid" id="reviewsGrid"></div>
+
+        <div class="load-more-wrap" id="loadMoreWrap">
+            <button onclick="loadMore()" id="loadMoreBtn">加载更多评价</button>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3><i class="fas fa-landmark"></i> 山河故楼</h3>
+                <p>诗词古建筑数字地图 · 传承中华文化</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-weixin"></i></a>
+                    <a href="#"><i class="fab fa-weibo"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>快速导航</h4>
+                <a href="index.html">首页</a>
+                <a href="smart-navigation.html">智能导航</a>
+                <a href="buildings.html">用户评价</a>
+                <a href="ai-assistant.html">AI助手</a>
+            </div>
+            <div class="footer-links">
+                <h4>关于我们</h4>
+                <a href="#">关于项目</a>
+                <a href="#">联系我们</a>
+                <a href="#">加入我们</a>
+                <a href="#">合作机构</a>
+            </div>
+            <div class="footer-links">
+                <h4>支持</h4>
+                <a href="#">帮助中心</a>
+                <a href="#">隐私政策</a>
+                <a href="#">用户协议</a>
+                <a href="#">版权声明</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 山河故楼 · 诗词古建筑地图. All Rights Reserved.</p>
+            <p>本网站仅供学习交流使用 · 部分图片来源于网络</p>
+        </div>
+    </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script>
+    function updateNavUserStatus() {
+        var container = document.getElementById('navUserStatus');
+        var user = getCurrentUser();
+
+        if (user) {
+            container.innerHTML = `
+                <a href="profile.html" class="nav-user-avatar" title="个人中心">
+                    ${user.name.charAt(0).toUpperCase()}
+                </a>
+                <span class="nav-user-name">${user.name}</span>
+                <button class="nav-logout-btn" onclick="handleLogout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            `;
+        } else {
+            container.innerHTML = `
+                <a href="login.html" class="nav-login-link">登录</a>
+                <a href="register.html" class="nav-register-link">注册</a>
+            `;
+        }
+    }
+
+    function handleLogout() {
+        if (confirm('确定要退出登录吗？')) {
+            logout();
+            updateNavUserStatus();
+            window.location.reload();
+        }
+    }
+
+    var currentPage = 0;
+    var PAGE_SIZE = 9;
+    var filteredReviews = [];
+    var selectedRating = 0;
+
+    function initBuildingSelects() {
+        var select1 = document.getElementById('reviewBuilding');
+        var select2 = document.getElementById('filterBuilding');
+
+        BUILDINGS.forEach(function(b) {
+            var opt1 = document.createElement('option');
+            opt1.value = b.id;
+            opt1.textContent = b.name + ' (' + b.dynasty + '·' + b.author + ')';
+            select1.appendChild(opt1);
+
+            var opt2 = document.createElement('option');
+            opt2.value = b.id;
+            opt2.textContent = b.name + ' (' + b.dynasty + '·' + b.author + ')';
+            select2.appendChild(opt2);
+        });
+    }
+
+    function setRating(value) {
+        selectedRating = value;
+        document.getElementById('reviewRating').value = value;
+        var stars = document.querySelectorAll('#starSelector i');
+        stars.forEach(function(el) {
+            var val = parseInt(el.dataset.value);
+            if (val <= value) {
+                el.className = 'fas fa-star active';
+            } else {
+                el.className = 'far fa-star';
+            }
+        });
+    }
+
+    function submitReview(e) {
+        e.preventDefault();
+        var user = getCurrentUser();
+        if (!user) {
+            alert('请先登录再发表评价');
+            window.location.href = 'login.html';
+            return;
+        }
+
+        var buildingId = document.getElementById('reviewBuilding').value;
+        var rating = parseInt(document.getElementById('reviewRating').value);
+        var content = document.getElementById('reviewContent').value.trim();
+
+        if (!buildingId) { alert('请选择建筑'); return; }
+        if (rating === 0) { alert('请给出评分'); return; }
+        if (content.length < 5) { alert('评价内容至少5个字'); return; }
+
+        var building = BUILDINGS.find(function(b) { return b.id == buildingId; });
+
+        var review = {
+            id: generateId(),
+            userId: user.id,
+            buildingId: buildingId,
+            buildingName: building.name,
+            dynasty: building.dynasty,
+            author: building.author,
+            rating: rating,
+            content: content,
+            likes: [],
+            createdAt: new Date().toISOString()
+        };
+
+        addReview(review);
+        clearForm();
+        currentPage = 0;
+        applyFilters();
+        updateStats();
+        document.getElementById('reviewsGrid').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function clearForm() {
+        document.getElementById('reviewBuilding').value = '';
+        document.getElementById('reviewContent').value = '';
+        document.getElementById('reviewRating').value = '0';
+        selectedRating = 0;
+        document.querySelectorAll('#starSelector i').forEach(function(el) {
+            el.className = 'far fa-star';
+        });
+    }
+
+    function renderReviews(reviews) {
+        var grid = document.getElementById('reviewsGrid');
+        var loadMoreWrap = document.getElementById('loadMoreWrap');
+
+        if (!reviews || reviews.length === 0) {
+            grid.innerHTML = '<div class="empty-state"><i class="fas fa-comment-dots"></i><p>还没有评价，快来分享您的体验吧！</p></div>';
+            loadMoreWrap.style.display = 'none';
+            return;
+        }
+
+        var start = 0;
+        var end = (currentPage + 1) * PAGE_SIZE;
+        var pageReviews = reviews.slice(start, end);
+
+        if (currentPage === 0) {
+            grid.innerHTML = '';
+        }
+
+        var currentUser = getCurrentUser();
+
+        pageReviews.forEach(function(review) {
+            var card = document.createElement('div');
+            card.className = 'review-card';
+
+            var isLiked = review.likes && review.likes.indexOf(currentUser?.id) > -1;
+            var likeCount = review.likes ? review.likes.length : 0;
+            var userName = getUserName(review.userId);
+            var initial = userName.charAt(0).toUpperCase();
+
+            var starsHtml = '';
+            for (var i = 1; i <= 5; i++) {
+                starsHtml += '<i class="fas fa-star ' + (i <= review.rating ? '' : 'empty') + '"></i>';
+            }
+
+            var canDelete = currentUser && currentUser.id === review.userId;
+
+            // ===== 修改：building-tag 内的景点名称变为可点击链接 =====
+            card.innerHTML = `
+                <div class="card-top">
+                    <div class="avatar">${initial}</div>
+                    <div class="info">
+                        <div class="name">${userName}</div>
+                        <div class="time">${formatTime(review.createdAt)}</div>
+                    </div>
+                </div>
+                <div class="building-tag">
+                    <i class="fas fa-landmark"></i>
+                    <a href="scene-detail.html?id=${review.buildingId}">${review.buildingName}</a>
+                    <span class="dynasty">· ${review.dynasty} · ${review.author}</span>
+                </div>
+                <div class="rating-stars">${starsHtml}</div>
+                <div class="review-text" id="text-${review.id}">${review.content}</div>
+                ${review.content.length > 80 ? '<button class="read-more" onclick="toggleText(\'' + review.id + '\')">展开全文</button>' : ''}
+                <div class="card-actions">
+                    <button class="${isLiked ? 'liked' : ''}" onclick="handleLike('${review.id}')">
+                        <i class="fas fa-heart"></i> <span id="like-count-${review.id}">${likeCount}</span>
+                    </button>
+                    <button onclick="reportReview('${review.id}')">
+                        <i class="fas fa-flag"></i> 举报
+                    </button>
+                    ${canDelete ? '<button class="del" onclick="deleteReview(\'' + review.id + '\')"><i class="fas fa-trash"></i> 删除</button>' : ''}
+                </div>
+            `;
+
+            grid.appendChild(card);
+        });
+
+        if (end >= reviews.length) {
+            loadMoreWrap.style.display = 'none';
+        } else {
+            loadMoreWrap.style.display = 'block';
+        }
+    }
+
+    function toggleText(id) {
+        var el = document.getElementById('text-' + id);
+        var btn = el.nextElementSibling;
+        if (el.classList.contains('expanded')) {
+            el.classList.remove('expanded');
+            btn.textContent = '展开全文';
+        } else {
+            el.classList.add('expanded');
+            btn.textContent = '收起';
+        }
+    }
+
+    function loadMore() {
+        currentPage++;
+        renderReviews(filteredReviews);
+    }
+
+    function handleLike(reviewId) {
+        var user = getCurrentUser();
+        if (!user) {
+            alert('请先登录');
+            window.location.href = 'login.html';
+            return;
+        }
+        toggleLike(reviewId, user.id);
+        applyFilters();
+        updateStats();
+    }
+
+    function deleteReview(reviewId) {
+        if (!confirm('确定要删除这条评价吗？')) return;
+        var reviews = getReviews();
+        reviews = reviews.filter(function(r) { return r.id !== reviewId; });
+        saveReviews(reviews);
+        currentPage = 0;
+        applyFilters();
+        updateStats();
+    }
+
+    function reportReview(reviewId) {
+        if (!getCurrentUser()) {
+            alert('请先登录');
+            window.location.href = 'login.html';
+            return;
+        }
+        alert('✅ 已收到举报，我们会尽快处理。');
+    }
+
+    function applyFilters() {
+        var search = document.getElementById('searchInput').value.toLowerCase();
+        var sortBy = document.getElementById('sortSelect').value;
+        var filterBuilding = document.getElementById('filterBuilding').value;
+
+        var reviews = getReviews();
+
+        if (search) {
+            reviews = reviews.filter(function(r) {
+                return r.buildingName.toLowerCase().indexOf(search) > -1 ||
+                    r.content.toLowerCase().indexOf(search) > -1 ||
+                    r.author.toLowerCase().indexOf(search) > -1;
+            });
+        }
+
+        if (filterBuilding !== 'all') {
+            reviews = reviews.filter(function(r) { return r.buildingId == filterBuilding; });
+        }
+
+        switch (sortBy) {
+            case 'newest':
+                reviews.sort(function(a, b) { return new Date(b.createdAt) - new Date(a.createdAt); });
+                break;
+            case 'oldest':
+                reviews.sort(function(a, b) { return new Date(a.createdAt) - new Date(b.createdAt); });
+                break;
+            case 'mostLiked':
+                reviews.sort(function(a, b) { return (b.likes?.length || 0) - (a.likes?.length || 0); });
+                break;
+            case 'highestRated':
+                reviews.sort(function(a, b) { return b.rating - a.rating; });
+                break;
+        }
+
+        filteredReviews = reviews;
+        currentPage = 0;
+        renderReviews(reviews);
+    }
+
+    function updateStats() {
+        var reviews = getReviews();
+        document.getElementById('totalReviews').textContent = reviews.length;
+
+        var totalLikes = 0;
+        var userSet = {};
+        reviews.forEach(function(r) {
+            totalLikes += r.likes ? r.likes.length : 0;
+            userSet[r.userId] = true;
+        });
+        document.getElementById('totalLikes').textContent = totalLikes;
+        document.getElementById('totalUsers').textContent = Object.keys(userSet).length;
+    }
+
+    function getUserName(userId) {
+        var user = getUserById(userId);
+        return user ? user.name : '匿名用户';
+    }
+
+    function formatTime(dateStr) {
+        var d = new Date(dateStr);
+        var now = Date.now();
+        var diff = now - d.getTime();
+        if (diff < 60000) return '刚刚';
+        if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+        if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+        if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+        return d.toLocaleDateString('zh-CN');
+    }
+
+    function updateUserStatus() {
+        var user = getCurrentUser();
+        if (user) {
+            document.getElementById('postAvatar').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('postName').textContent = user.name;
+            document.getElementById('loginHint').innerHTML = '';
+        } else {
+            document.getElementById('postAvatar').textContent = '?';
+            document.getElementById('postName').textContent = '游客';
+            document.getElementById('loginHint').innerHTML = '<a href="login.html">登录</a> 后发表评价';
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initBuildingSelects();
+        updateUserStatus();
+        updateNavUserStatus();
+        applyFilters();
+        updateStats();
+    });
+
+    window.setRating = setRating;
+    window.submitReview = submitReview;
+    window.clearForm = clearForm;
+    window.applyFilters = applyFilters;
+    window.loadMore = loadMore;
+    window.toggleText = toggleText;
+    window.handleLike = handleLike;
+    window.deleteReview = deleteReview;
+    window.reportReview = reportReview;
+    window.handleLogout = handleLogout;
+</script>
+</body>
+</html>

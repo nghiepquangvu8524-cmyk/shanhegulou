@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>AI古建助手 · 山河故楼</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <script src="theme.js"></script>
+    <style>
+        .ai-page {
+            min-height: calc(100vh - 200px);
+            background: linear-gradient(160deg, #f8f4ee 0%, #efe8df 100%);
+            padding: 24px 0 40px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .ai-page .container { max-width: 820px; width: 100%; padding: 0 24px; }
+        .ai-header { margin-bottom: 20px; }
+        .ai-header h1 { font-size: 1.8rem; font-weight: 700; color: #3d2c1b; font-family: 'STSong','SimSun',serif; }
+        .ai-header h1 i { color: #b8956a; margin-right: 10px; }
+        .ai-header p { color: #9a8a7a; font-size: 0.95rem; margin-top: 2px; }
+        .ai-chat {
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(12px);
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.6);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 480px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.02);
+        }
+        .ai-chat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border-bottom: 1px solid rgba(184,149,106,0.06);
+            flex-shrink: 0;
+        }
+        .ai-chat-header .avatar {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            background: #b8956a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+        .ai-chat-header .info { flex: 1; }
+        .ai-chat-header .info .name { color: #3d2c1b; font-weight: 600; font-size: 0.9rem; }
+        .ai-chat-header .info .status { color: #9a8a7a; font-size: 0.7rem; }
+        .ai-chat-header .actions button {
+            background: none; border: none;
+            color: #c0b0a0;
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .ai-chat-header .actions button:hover { background: rgba(184,149,106,0.06); color: #5a4a3a; }
+        .ai-messages {
+            flex: 1;
+            padding: 16px 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .msg { display: flex; gap: 10px; max-width: 88%; animation: fadeIn 0.3s ease; }
+        .msg.ai { align-self: flex-start; }
+        .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+        .msg .msg-avatar {
+            width: 30px; height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 0.8rem;
+        }
+        .msg.ai .msg-avatar { background: #b8956a; color: #fff; }
+        .msg.user .msg-avatar { background: rgba(184,149,106,0.1); border: 1px solid rgba(184,149,106,0.1); color: #9a8a7a; }
+        .msg .bubble {
+            padding: 10px 16px;
+            border-radius: 12px;
+            line-height: 1.7;
+            font-size: 0.88rem;
+            word-wrap: break-word;
+        }
+        .msg.ai .bubble {
+            background: rgba(255,255,255,0.8);
+            border: 1px solid rgba(255,255,255,0.6);
+            border-top-left-radius: 4px;
+            color: #3d2c1b;
+        }
+        .msg.user .bubble { background: #b8956a; color: #fff; border-top-right-radius: 4px; }
+        .typing-indicator { display: flex; gap: 5px; padding: 4px 0; }
+        .typing-indicator span {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            background: #b8956a;
+            animation: typingBounce 1.4s infinite ease-in-out both;
+        }
+        .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes typingBounce {
+            0%,80%,100% { transform: scale(0.4); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        .ai-presets {
+            padding: 10px 20px;
+            border-top: 1px solid rgba(184,149,106,0.06);
+            display: flex;
+            gap: 6px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            flex-shrink: 0;
+        }
+        .ai-presets::-webkit-scrollbar { display: none; }
+        .ai-presets button {
+            flex-shrink: 0;
+            padding: 5px 14px;
+            border: 1px solid rgba(184,149,106,0.08);
+            border-radius: 20px;
+            background: rgba(255,255,255,0.3);
+            color: #9a8a7a;
+            cursor: pointer;
+            font-size: 0.72rem;
+            transition: all 0.3s ease;
+            font-family: inherit;
+            white-space: nowrap;
+        }
+        .ai-presets button:hover { background: rgba(255,255,255,0.8); color: #b8956a; border-color: #b8956a; }
+        .ai-input {
+            display: flex;
+            gap: 10px;
+            padding: 12px 20px;
+            border-top: 1px solid rgba(184,149,106,0.06);
+            flex-shrink: 0;
+        }
+        .ai-input .input-wrap { flex: 1; position: relative; }
+        .ai-input .input-wrap textarea {
+            width: 100%;
+            min-height: 38px;
+            max-height: 90px;
+            padding: 8px 14px;
+            border: 1px solid rgba(184,149,106,0.1);
+            border-radius: 10px;
+            background: rgba(255,255,255,0.5);
+            color: #3d2c1b;
+            font-size: 0.85rem;
+            font-family: inherit;
+            resize: none;
+            outline: none;
+            transition: all 0.3s ease;
+            line-height: 1.5;
+        }
+        .ai-input .input-wrap textarea:focus {
+            border-color: #b8956a;
+            box-shadow: 0 0 0 3px rgba(184,149,106,0.04);
+            background: rgba(255,255,255,0.8);
+        }
+        .ai-input .input-wrap textarea::placeholder { color: #c0b0a0; }
+        .ai-input .send-btn {
+            width: 42px; height: 42px;
+            border-radius: 50%;
+            background: #b8956a;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            font-size: 0.95rem;
+        }
+        .ai-input .send-btn:hover:not(:disabled) {
+            background: #a8845a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(184,149,106,0.2);
+        }
+        .ai-input .send-btn:disabled { opacity: 0.3; cursor: not-allowed; transform: none !important; }
+        @media (max-width:768px) {
+            .ai-page { padding: 16px 0 24px; }
+            .ai-page .container { padding: 0 16px; }
+            .ai-header h1 { font-size: 1.4rem; }
+            .ai-chat { height: 420px; border-radius: 14px; }
+            .ai-messages { padding: 12px 16px; }
+            .msg { max-width: 95%; }
+            .ai-presets { padding: 8px 16px; }
+            .ai-input { padding: 10px 16px; }
+        }
+        @media (max-width:480px) {
+            .ai-chat { height: 380px; }
+            .ai-chat-header { padding: 10px 14px; }
+            .ai-messages { padding: 10px 12px; gap: 10px; }
+            .msg .bubble { font-size: 0.82rem; padding: 8px 12px; }
+            .ai-presets button { font-size: 0.65rem; padding: 4px 10px; }
+            .ai-input .input-wrap textarea { font-size: 0.8rem; min-height: 34px; padding: 6px 12px; }
+            .ai-input .send-btn { width: 38px; height: 38px; font-size: 0.85rem; }
+        }
+        body.dark-theme .ai-page { background: linear-gradient(160deg,#0a0a1a 0%,#1a1a2e 100%); }
+        body.dark-theme .ai-header h1 { color: #f5f0ea; }
+        body.dark-theme .ai-header p { color: rgba(255,255,255,0.4); }
+        body.dark-theme .ai-chat { background: rgba(26,26,46,0.85); border-color: rgba(255,255,255,0.04); }
+        body.dark-theme .ai-chat-header .info .name { color: #f5f0ea; }
+        body.dark-theme .msg.ai .bubble { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.04); color: rgba(255,255,255,0.8); }
+        body.dark-theme .ai-input .input-wrap textarea { background: rgba(255,255,255,0.04); color: #f5f0ea; border-color: rgba(255,255,255,0.06); }
+        body.dark-theme .ai-input .input-wrap textarea:focus { background: rgba(255,255,255,0.06); border-color: #c9a87b; }
+        body.dark-theme .ai-presets button { background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.04); }
+        body.dark-theme .ai-presets button:hover { background: rgba(201,168,123,0.08); color: #c9a87b; border-color: #c9a87b; }
+        body.dark-theme .ai-chat-header .actions button { color: rgba(255,255,255,0.3); }
+        body.dark-theme .ai-chat-header .actions button:hover { color: rgba(255,255,255,0.6); }
+    </style>
+</head>
+<body>
+
+<header class="navbar" id="mainNavbar">
+    <div class="container navbar-content">
+        <div class="navbar-brand">
+            <a href="index.html" class="brand-link"><i class="fas fa-landmark"></i><span>山河故楼</span></a>
+        </div>
+        <nav class="navbar-nav">
+            <a href="index.html" class="nav-link">首页</a>
+            <a href="smart-navigation.html" class="nav-link">智能导航</a>
+            <a href="buildings.html" class="nav-link">用户评价</a>
+            <a href="ai-assistant.html" class="nav-link active">AI助手</a>
+            <a href="profile.html" class="nav-link" id="navProfileLink">个人中心</a>
+        </nav>
+        <div class="navbar-actions">
+            <div id="navUserStatus" class="nav-user-status"></div>
+            <button class="theme-toggle" title="切换主题" onclick="toggleTheme()">
+                <i class="fas fa-moon"></i>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="ai-page">
+    <div class="container">
+        <div class="ai-header">
+            <h1><i class="fas fa-dragon"></i> AI 古建助手</h1>
+            <p>中国古典建筑学与文化顾问 · 智能问答</p>
+        </div>
+        <div class="ai-chat">
+            <div class="ai-chat-header">
+                <div class="avatar"><i class="fas fa-dragon"></i></div>
+                <div class="info">
+                    <div class="name">AI 古建助手</div>
+                    <div class="status">● 在线 · 古建专家</div>
+                </div>
+                <div class="actions">
+                    <button onclick="clearChat()" title="清空对话"><i class="fas fa-broom"></i></button>
+                </div>
+            </div>
+            <div class="ai-messages" id="aiMessages"></div>
+            <div class="ai-presets">
+                <button onclick="sendPreset('佛光寺东大殿的建筑特点是什么？')"><i class="fas fa-vihara"></i> 佛光寺</button>
+                <button onclick="sendPreset('应县木塔为什么能千年不倒？')"><i class="fas fa-gopuram"></i> 应县木塔</button>
+                <button onclick="sendPreset('斗拱结构有什么作用？')"><i class="fas fa-puzzle-piece"></i> 斗拱</button>
+                <button onclick="sendPreset('如何区分唐代和明清建筑风格？')"><i class="fas fa-scroll"></i> 朝代风格</button>
+            </div>
+            <div class="ai-input">
+                <div class="input-wrap">
+                    <textarea id="aiInput" placeholder="提问关于古建的问题..." onkeydown="handleKeyDown(event)" oninput="adjustHeight(this)"></textarea>
+                </div>
+                <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <h3><i class="fas fa-landmark"></i> 山河故楼</h3>
+                <p>诗词古建筑数字地图 · 传承中华文化</p>
+                <div class="footer-social">
+                    <a href="#"><i class="fab fa-weixin"></i></a>
+                    <a href="#"><i class="fab fa-weibo"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+            <div class="footer-links">
+                <h4>快速导航</h4>
+                <a href="index.html">首页</a>
+                <a href="smart-navigation.html">智能导航</a>
+                <a href="buildings.html">用户评价</a>
+                <a href="ai-assistant.html">AI助手</a>
+            </div>
+            <div class="footer-links">
+                <h4>关于我们</h4>
+                <a href="#">关于项目</a>
+                <a href="#">联系我们</a>
+                <a href="#">加入我们</a>
+                <a href="#">合作机构</a>
+            </div>
+            <div class="footer-links">
+                <h4>支持</h4>
+                <a href="#">帮助中心</a>
+                <a href="#">隐私政策</a>
+                <a href="#">用户协议</a>
+                <a href="#">版权声明</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 山河故楼 · 诗词古建筑地图. All Rights Reserved.</p>
+            <p>本网站仅供学习交流使用 · 部分图片来源于网络</p>
+        </div>
+    </div>
+</footer>
+
+<script src="auth.js"></script>
+<script>
+    // 主题切换由 theme.js 统一管理
+    function updateNavUserStatus() {
+        var container = document.getElementById('navUserStatus');
+        var user = getCurrentUser();
+        if (user) {
+            container.innerHTML = `
+                <a href="profile.html" class="nav-user-avatar" title="个人中心">${user.name.charAt(0).toUpperCase()}</a>
+                <span class="nav-user-name">${user.name}</span>
+                <button class="nav-logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+            `;
+        } else {
+            container.innerHTML = `
+                <a href="login.html" class="nav-login-link">登录</a>
+                <a href="register.html" class="nav-register-link">注册</a>
+            `;
+        }
+    }
+
+    function handleLogout() {
+        if (confirm('确定要退出登录吗？')) {
+            logout();
+            updateNavUserStatus();
+            window.location.reload();
+        }
+    }
+
+    // AI 助手逻辑
+    var API_KEY = 'sk-08623be4d5804a01aa8fcb7770c44396';
+    var API_URL = 'https://api.deepseek.com/v1/chat/completions';
+
+    var chatHistory = [{
+        role: "system",
+        content: "你是一个专业的中国古代建筑知识助手，精通中国古代建筑的历史、结构、风格和文化意义。请用中文回答用户的问题，提供详细、准确的信息，并且语言要友好、专业。"
+    }];
+
+    var messagesContainer = document.getElementById('aiMessages');
+    var userInput = document.getElementById('aiInput');
+    var sendBtn = document.getElementById('sendBtn');
+
+    function initChat() {
+        appendMessage('您好！我是古建智能助手，您可以向我了解榫卯、斗拱、皇家园林或是历代木构建筑的相关知识。', 'ai');
+    }
+
+    function sendMessage() {
+        var message = userInput.value.trim();
+        if (!message) return;
+
+        appendMessage(message, 'user');
+        userInput.value = '';
+        userInput.style.height = '38px';
+        sendBtn.disabled = true;
+
+        var typingId = showTyping();
+        chatHistory.push({ role: "user", content: message });
+
+        fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + API_KEY
+            },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: chatHistory,
+                temperature: 0.7,
+                max_tokens: 1500
+            })
+        })
+        .then(function(response) {
+            if (!response.ok) throw new Error('API Error: ' + response.status);
+            return response.json();
+        })
+        .then(function(data) {
+            var aiResponse = data.choices[0].message.content;
+            chatHistory.push({ role: "assistant", content: aiResponse });
+            removeTyping(typingId);
+            appendMessage(aiResponse, 'ai');
+        })
+        .catch(function(error) {
+            removeTyping(typingId);
+            appendMessage('抱歉，建筑典籍翻阅中遇到点小问题，请稍后再试。', 'ai');
+            console.error(error);
+        })
+        .finally(function() {
+            sendBtn.disabled = false;
+        });
+    }
+
+    function appendMessage(text, sender) {
+        var wrapper = document.createElement('div');
+        wrapper.className = 'msg ' + sender;
+        var avatarHtml = sender === 'ai'
+            ? '<div class="msg-avatar"><i class="fas fa-dragon"></i></div>'
+            : '<div class="msg-avatar"><i class="fas fa-user"></i></div>';
+        var formattedText = text.replace(/\n/g, '<br>');
+        wrapper.innerHTML = avatarHtml + '<div class="bubble">' + formattedText + '</div>';
+        messagesContainer.appendChild(wrapper);
+        scrollToBottom();
+    }
+
+    function showTyping() {
+        var id = 'typing-' + Date.now();
+        var wrapper = document.createElement('div');
+        wrapper.className = 'msg ai';
+        wrapper.id = id;
+        wrapper.innerHTML = `
+            <div class="msg-avatar"><i class="fas fa-dragon"></i></div>
+            <div class="bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>
+        `;
+        messagesContainer.appendChild(wrapper);
+        scrollToBottom();
+        return id;
+    }
+
+    function removeTyping(id) {
+        var el = document.getElementById(id);
+        if (el) el.remove();
+    }
+
+    function sendPreset(question) {
+        userInput.value = question;
+        sendBtn.disabled = false;
+        sendMessage();
+    }
+
+    function clearChat() {
+        messagesContainer.innerHTML = '';
+        chatHistory = [chatHistory[0]];
+        initChat();
+    }
+
+    function handleKeyDown(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!sendBtn.disabled) sendMessage();
+        }
+    }
+
+    function adjustHeight(el) {
+        el.style.height = '38px';
+        el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+        sendBtn.disabled = el.value.trim() === '';
+    }
+
+    function scrollToBottom() {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    userInput.addEventListener('input', function() {
+        sendBtn.disabled = userInput.value.trim() === '';
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        updateNavUserStatus();
+        initChat();
+    });
+
+    window.sendMessage = sendMessage;
+    window.sendPreset = sendPreset;
+    window.clearChat = clearChat;
+    window.handleKeyDown = handleKeyDown;
+    window.adjustHeight = adjustHeight;
+    window.handleLogout = handleLogout;
+</script>
+</body>
+</html>

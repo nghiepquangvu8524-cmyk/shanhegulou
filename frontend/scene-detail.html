@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes">
+  <title>景点详情 · 山河故楼</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <script src="theme.js"></script>
+  <style>
+    .scene-page {
+      min-height: calc(100vh - 200px);
+      background: linear-gradient(160deg, #f8f4ee 0%, #efe8df 100%);
+      padding: 24px 0 40px;
+    }
+    .scene-page .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .scene-header {
+      margin-bottom: 20px;
+    }
+    .scene-header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #3d2c1b;
+      font-family: 'STSong','SimSun',serif;
+    }
+    .scene-header h1 i {
+      color: #b8956a;
+      margin-right: 10px;
+    }
+    .scene-header .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #b8956a;
+      text-decoration: none;
+      font-size: 0.9rem;
+      margin-bottom: 6px;
+      transition: color 0.3s;
+    }
+    .scene-header .back-link:hover {
+      color: #a8845a;
+      text-decoration: underline;
+    }
+
+    .scene-card {
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.6);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.03);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+    .scene-card .scene-image {
+      width: 100%;
+      height: 340px;
+      background: #d9cfc0;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+    .scene-card .scene-image .dynasty-badge {
+      position: absolute;
+      bottom: 16px;
+      left: 20px;
+      background: rgba(61,44,27,0.7);
+      backdrop-filter: blur(4px);
+      color: #f5f0ea;
+      padding: 6px 18px;
+      border-radius: 30px;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .scene-card .scene-body {
+      padding: 24px 28px 20px;
+    }
+    .scene-card .scene-body .scene-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .scene-card .scene-body .scene-title h2 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: #3d2c1b;
+      font-family: 'STSong','SimSun',serif;
+    }
+    .scene-card .scene-body .scene-title .author {
+      color: #9a8a7a;
+      font-size: 0.9rem;
+    }
+    .scene-card .scene-body .scene-meta {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin: 8px 0 14px;
+      color: #9a8a7a;
+      font-size: 0.85rem;
+    }
+    .scene-card .scene-body .scene-meta i {
+      color: #b8956a;
+      width: 18px;
+    }
+    .scene-card .scene-body .poem-box {
+      background: rgba(184,149,106,0.04);
+      border-left: 3px solid #b8956a;
+      padding: 12px 18px;
+      border-radius: 0 10px 10px 0;
+      margin: 10px 0 16px;
+      font-family: '华文行书','STXingkai','KaiTi',cursive,serif;
+      color: #5a4a3a;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      font-size: 0.95rem;
+    }
+    .scene-card .scene-body .desc {
+      color: #5a4a3a;
+      line-height: 1.8;
+      font-size: 0.95rem;
+      margin-bottom: 4px;
+    }
+
+    /* 评价区块 */
+    .review-section {
+      background: rgba(255,255,255,0.5);
+      backdrop-filter: blur(8px);
+      border-radius: 16px;
+      padding: 20px 24px 18px;
+      border: 1px solid rgba(255,255,255,0.5);
+      margin-top: 8px;
+    }
+    .review-section .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #3d2c1b;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .review-section .section-title i {
+      color: #b8956a;
+    }
+    .review-section .section-title .count {
+      font-weight: 400;
+      font-size: 0.85rem;
+      color: #9a8a7a;
+      margin-left: 6px;
+    }
+    .review-item {
+      background: rgba(255,255,255,0.6);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border: 1px solid rgba(184,149,106,0.04);
+      transition: 0.2s;
+    }
+    .review-item:hover {
+      background: rgba(255,255,255,0.8);
+    }
+    .review-item .review-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .review-item .review-top .user {
+      font-weight: 500;
+      color: #3d2c1b;
+      font-size: 0.9rem;
+    }
+    .review-item .review-top .stars {
+      color: #f39c12;
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+    }
+    .review-item .review-top .stars .empty {
+      color: #e0d5c8;
+    }
+    .review-item .review-top .time {
+      color: #c0b0a0;
+      font-size: 0.7rem;
+    }
+    .review-item .review-text {
+      color: #5a4a3a;
+      font-size: 0.88rem;
+      line-height: 1.6;
+      margin-top: 4px;
+    }
+    .review-item .review-actions {
+      margin-top: 8px;
+      display: flex;
+      gap: 12px;
+    }
+    .review-item .review-actions button {
+      background: none;
+      border: none;
+      color: #9a8a7a;
+      font-size: 0.75rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border-radius: 20px;
+      transition: 0.2s;
+      font-family: inherit;
+    }
+    .review-item .review-actions button:hover {
+      background: rgba(184,149,106,0.06);
+      color: #5a4a3a;
+    }
+    .review-item .review-actions .liked {
+      color: #c0392b;
+    }
+    .empty-reviews {
+      text-align: center;
+      color: #c0b0a0;
+      padding: 20px 0;
+    }
+    .empty-reviews i {
+      font-size: 2rem;
+      opacity: 0.3;
+      display: block;
+      margin-bottom: 6px;
+    }
+    .post-review-mini {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid rgba(184,149,106,0.08);
+    }
+    .post-review-mini .mini-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .post-review-mini .mini-form .row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    .post-review-mini .mini-form .row .stars-select {
+      display: flex;
+      gap: 4px;
+    }
+    .post-review-mini .mini-form .row .stars-select i {
+      font-size: 1.1rem;
+      color: #e0d5c8;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .post-review-mini .mini-form .row .stars-select i.active,
+    .post-review-mini .mini-form .row .stars-select i:hover {
+      color: #f39c12;
+    }
+    .post-review-mini .mini-form textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid rgba(184,149,106,0.1);
+      border-radius: 10px;
+      background: rgba(255,255,255,0.5);
+      font-family: inherit;
+      font-size: 0.85rem;
+      resize: vertical;
+      min-height: 50px;
+      transition: 0.3s;
+      outline: none;
+      color: #3d2c1b;
+    }
+    .post-review-mini .mini-form textarea:focus {
+      border-color: #b8956a;
+      background: rgba(255,255,255,0.8);
+    }
+    .post-review-mini .mini-form .btn-submit-mini {
+      align-self: flex-end;
+      padding: 8px 22px;
+      background: #b8956a;
+      border: none;
+      border-radius: 30px;
+      color: #fff;
+      font-weight: 500;
+      cursor: pointer;
+      transition: 0.3s;
+      font-family: inherit;
+      font-size: 0.85rem;
+    }
+    .post-review-mini .mini-form .btn-submit-mini:hover {
+      background: #a8845a;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(184,149,106,0.2);
+    }
+    .post-review-mini .mini-form .btn-submit-mini:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+    .login-hint-mini {
+      color: #9a8a7a;
+      font-size: 0.85rem;
+    }
+    .login-hint-mini a {
+      color: #b8956a;
+      text-decoration: none;
+    }
+    .login-hint-mini a:hover {
+      text-decoration: underline;
+    }
+
+    /* 图片加载失败占位 */
+    .scene-image .img-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #e8dfd4 0%, #d9cfc0 100%);
+      color: #b8956a;
+      font-size: 4rem;
+      flex-direction: column;
+    }
+    .scene-image .img-placeholder span {
+      font-size: 1rem;
+      color: #9a8a7a;
+      margin-top: 12px;
+      font-family: 'STSong','SimSun',serif;
+    }
+
+    @media (max-width: 768px) {
+      .scene-page { padding: 16px 0 24px; }
+      .scene-page .container { padding: 0 16px; }
+      .scene-card .scene-image { height: 220px; }
+      .scene-card .scene-body { padding: 18px 16px; }
+      .scene-card .scene-body .scene-title h2 { font-size: 1.3rem; }
+      .review-section { padding: 16px 14px; }
+    }
+    @media (max-width: 480px) {
+      .scene-card .scene-image { height: 170px; }
+      .scene-card .scene-body .poem-box { font-size: 0.85rem; padding: 10px 12px; }
+      .review-item { padding: 12px 12px; }
+    }
+
+    body.dark-theme .scene-page {
+      background: linear-gradient(160deg, #0a0a1a 0%, #1a1a2e 100%);
+    }
+    body.dark-theme .scene-header h1 { color: #f5f0ea; }
+    body.dark-theme .scene-card {
+      background: rgba(26,26,46,0.85);
+      border-color: rgba(255,255,255,0.04);
+    }
+    body.dark-theme .scene-card .scene-body .scene-title h2 { color: #f5f0ea; }
+    body.dark-theme .scene-card .scene-body .desc { color: rgba(255,255,255,0.7); }
+    body.dark-theme .scene-card .scene-body .poem-box {
+      background: rgba(255,255,255,0.02);
+      color: rgba(255,255,255,0.7);
+      border-left-color: #c9a87b;
+    }
+    body.dark-theme .review-section {
+      background: rgba(26,26,46,0.6);
+      border-color: rgba(255,255,255,0.04);
+    }
+    body.dark-theme .review-section .section-title { color: #f5f0ea; }
+    body.dark-theme .review-item {
+      background: rgba(255,255,255,0.02);
+      border-color: rgba(255,255,255,0.03);
+    }
+    body.dark-theme .review-item .review-top .user { color: #f5f0ea; }
+    body.dark-theme .review-item .review-text { color: rgba(255,255,255,0.7); }
+    body.dark-theme .post-review-mini .mini-form textarea {
+      background: rgba(255,255,255,0.04);
+      color: #f5f0ea;
+      border-color: rgba(255,255,255,0.06);
+    }
+    body.dark-theme .post-review-mini .mini-form textarea:focus {
+      background: rgba(255,255,255,0.06);
+      border-color: #c9a87b;
+    }
+  </style>
+</head>
+<body>
+
+<header class="navbar" id="mainNavbar">
+  <div class="container navbar-content">
+    <div class="navbar-brand">
+      <a href="index.html" class="brand-link"><i class="fas fa-landmark"></i><span>山河故楼</span></a>
+    </div>
+    <nav class="navbar-nav">
+      <a href="index.html" class="nav-link">首页</a>
+      <a href="smart-navigation.html" class="nav-link">智能导航</a>
+      <a href="buildings.html" class="nav-link active">用户评价</a>
+      <a href="ai-assistant.html" class="nav-link">AI助手</a>
+      <a href="profile.html" class="nav-link" id="navProfileLink">个人中心</a>
+    </nav>
+    <div class="navbar-actions">
+      <div id="navUserStatus" class="nav-user-status"></div>
+      <button class="theme-toggle" title="切换主题" onclick="toggleTheme()">
+        <i class="fas fa-moon"></i>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main class="scene-page">
+  <div class="container">
+    <div class="scene-header">
+      <a href="buildings.html" class="back-link"><i class="fas fa-arrow-left"></i> 返回评价列表</a>
+      <h1><i class="fas fa-landmark"></i> 景点详情</h1>
+    </div>
+
+    <div class="scene-card" id="sceneCard">
+      <div class="scene-image" id="sceneImage">
+        <span class="dynasty-badge" id="dynastyBadge">·</span>
+      </div>
+      <div class="scene-body">
+        <div class="scene-title">
+          <h2 id="sceneName">加载中...</h2>
+          <span class="author" id="sceneAuthor">·</span>
+        </div>
+        <div class="scene-meta">
+          <span><i class="fas fa-calendar-alt"></i> <span id="sceneDynasty">·</span></span>
+          <span><i class="fas fa-feather-alt"></i> <span id="sceneAuthorLabel">·</span></span>
+        </div>
+        <div class="poem-box" id="scenePoem">·</div>
+        <div class="desc" id="sceneDesc">·</div>
+      </div>
+    </div>
+
+    <!-- 评价区 -->
+    <div class="review-section" id="reviewSection">
+      <div class="section-title">
+        <i class="fas fa-comment-dots"></i> 用户评价
+        <span class="count" id="reviewCount">(0)</span>
+      </div>
+      <div id="reviewsContainer"></div>
+
+      <div class="post-review-mini" id="postReviewMini">
+        <div class="mini-form">
+          <div class="row">
+            <div class="stars-select" id="starSelectorMini">
+              <i data-val="1" class="far fa-star" onclick="setRatingMini(1)"></i>
+              <i data-val="2" class="far fa-star" onclick="setRatingMini(2)"></i>
+              <i data-val="3" class="far fa-star" onclick="setRatingMini(3)"></i>
+              <i data-val="4" class="far fa-star" onclick="setRatingMini(4)"></i>
+              <i data-val="5" class="far fa-star" onclick="setRatingMini(5)"></i>
+            </div>
+            <span style="font-size:0.8rem;color:#9a8a7a;" id="ratingLabelMini">点击星标评分</span>
+          </div>
+          <textarea id="reviewInputMini" placeholder="分享您的感受… (至少5字)"></textarea>
+          <button class="btn-submit-mini" id="submitReviewMini" onclick="submitReviewMini()">
+            <i class="fas fa-paper-plane"></i> 发布评价
+          </button>
+          <div class="login-hint-mini" id="loginHintMini">
+            <a href="login.html">登录</a> 后发表评价
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3><i class="fas fa-landmark"></i> 山河故楼</h3>
+        <p>诗词古建筑数字地图 · 传承中华文化</p>
+        <div class="footer-social">
+          <a href="#"><i class="fab fa-weixin"></i></a>
+          <a href="#"><i class="fab fa-weibo"></i></a>
+          <a href="#"><i class="fab fa-github"></i></a>
+        </div>
+      </div>
+      <div class="footer-links">
+        <h4>快速导航</h4>
+        <a href="index.html">首页</a>
+        <a href="smart-navigation.html">智能导航</a>
+        <a href="buildings.html">用户评价</a>
+        <a href="ai-assistant.html">AI助手</a>
+      </div>
+      <div class="footer-links">
+        <h4>关于我们</h4>
+        <a href="#">关于项目</a>
+        <a href="#">联系我们</a>
+        <a href="#">加入我们</a>
+        <a href="#">合作机构</a>
+      </div>
+      <div class="footer-links">
+        <h4>支持</h4>
+        <a href="#">帮助中心</a>
+        <a href="#">隐私政策</a>
+        <a href="#">用户协议</a>
+        <a href="#">版权声明</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>© 2025 山河故楼 · 诗词古建筑地图. All Rights Reserved.</p>
+      <p>本网站仅供学习交流使用 · 部分图片来源于网络</p>
+    </div>
+  </div>
+</footer>
+
+<script src="data.js"></script>
+<script src="auth.js"></script>
+<script>
+  // ============================================================
+  // 完整版 scene-detail.js - 支持12个有图片的景点
+  // ============================================================
+
+  // ---------- 图片映射（12个有图片的景点） ----------
+  var IMAGE_MAP = {
+    '滕王阁': '滕王阁.png',
+    '黄鹤楼': '黄鹤楼.png',
+    '岳阳楼': '岳阳楼.png',
+    '寒山寺': '寒山寺.png',
+    '西湖': '西湖.png',
+    '白帝城': '白帝城.png',
+    '长安': '长安.png',
+    '洛阳城': '洛阳城.png',
+    '泰山': '泰山.png',
+    '庐山': '庐山.png',
+    '北固山': '北固山.png',
+    '布达拉宫': '布达拉宫.png'
+  };
+
+  // ---------- 工具函数 ----------
+  function getSceneIdFromUrl() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get('id');
+  }
+
+  // 从 BUILDINGS 获取完整数据 (data.js)
+  function getBuildingById(id) {
+    // 转成数字比较
+    var numId = parseInt(id);
+    if (window.BUILDINGS && window.BUILDINGS.length > 0) {
+      var found = window.BUILDINGS.find(function(b) { return b.id == numId; });
+      if (found) return found;
+    }
+    return null;
+  }
+
+  // 从 API 获取建筑数据
+  async function fetchBuildingFromAPI(id) {
+    try {
+      var response = await fetch('/api/buildings/' + id);
+      var data = await response.json();
+      if (data.success) {
+        // 添加到缓存
+        if (window.BUILDINGS) {
+          window.BUILDINGS.push(data.data);
+        }
+        return data.data;
+      }
+      return null;
+    } catch (err) {
+      console.error('获取建筑数据失败:', err);
+      return null;
+    }
+  }
+
+  // ---------- 评价相关 ----------
+  async function getReviewsForBuilding(buildingId) {
+    try {
+      var response = await fetch('/api/reviews/building/' + buildingId);
+      var data = await response.json();
+      if (data.success) return data.data;
+      return [];
+    } catch {
+      return [];
+    }
+  }
+
+  async function renderReviews(buildingId) {
+    var container = document.getElementById('reviewsContainer');
+    var countEl = document.getElementById('reviewCount');
+
+    try {
+      var reviews = await getReviewsForBuilding(buildingId);
+      countEl.textContent = '(' + reviews.length + ')';
+
+      if (reviews.length === 0) {
+        container.innerHTML = '<div class="empty-reviews"><i class="fas fa-comment-dots"></i> 暂无评价，快来发表第一条吧</div>';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < reviews.length; i++) {
+        var r = reviews[i];
+        var user = getUserById(r.user_id);
+        var userName = user ? user.name : '匿名用户';
+        var stars = renderStars(r.rating);
+        var time = formatTime(r.created_at);
+        var likes = JSON.parse(r.likes || '[]');
+        var isLiked = user && likes.indexOf(user.id) > -1;
+        var likeCount = likes.length;
+
+        html += `
+          <div class="review-item" data-id="${r.id}">
+            <div class="review-top">
+              <span class="user"><i class="fas fa-user-circle"></i> ${userName}</span>
+              <span class="stars">${stars}</span>
+              <span class="time">${time}</span>
+            </div>
+            <div class="review-text">${r.content}</div>
+            <div class="review-actions">
+              <button onclick="handleLikeMini('${r.id}')" class="${isLiked ? 'liked' : ''}">
+                <i class="fas fa-heart"></i> <span class="like-count">${likeCount}</span>
+              </button>
+              <button onclick="reportReviewMini('${r.id}')"><i class="fas fa-flag"></i> 举报</button>
+              ${user && user.id === r.user_id ? `<button onclick="deleteReviewMini('${r.id}')" style="color:#c0392b;"><i class="fas fa-trash"></i> 删除</button>` : ''}
+            </div>
+          </div>
+        `;
+      }
+      container.innerHTML = html;
+    } catch (err) {
+      console.error('加载评价失败:', err);
+      container.innerHTML = '<div class="empty-reviews"><i class="fas fa-exclamation-triangle"></i> 加载失败，请刷新</div>';
+    }
+  }
+
+  function renderStars(rating) {
+    var s = '';
+    for (var i = 1; i <= 5; i++) {
+      s += '<i class="fas fa-star ' + (i <= rating ? '' : 'empty') + '"></i>';
+    }
+    return s;
+  }
+
+  function formatTime(dateStr) {
+    var d = new Date(dateStr);
+    var now = Date.now();
+    var diff = now - d.getTime();
+    if (diff < 60000) return '刚刚';
+    if (diff < 3600000) return Math.floor(diff/60000)+'分钟前';
+    if (diff < 86400000) return Math.floor(diff/3600000)+'小时前';
+    if (diff < 604800000) return Math.floor(diff/86400000)+'天前';
+    return d.toLocaleDateString('zh-CN');
+  }
+
+  // ---------- 点赞/举报/删除 ----------
+  async function handleLikeMini(reviewId) {
+    var user = getCurrentUser();
+    if (!user) { alert('请先登录'); window.location.href='login.html'; return; }
+    
+    var token = getToken();
+    if (!token) { alert('请先登录'); return; }
+
+    try {
+      var response = await fetch('/api/reviews/' + reviewId + '/like', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      var data = await response.json();
+      if (data.success) {
+        var buildingId = getSceneIdFromUrl();
+        renderReviews(buildingId);
+      } else {
+        alert(data.message || '操作失败');
+      }
+    } catch (err) {
+      alert('网络错误，请重试');
+      console.error(err);
+    }
+  }
+
+  function reportReviewMini(reviewId) {
+    if (!getCurrentUser()) { alert('请先登录'); window.location.href='login.html'; return; }
+    alert('✅ 已收到举报，我们会尽快处理。');
+  }
+
+  async function deleteReviewMini(reviewId) {
+    if (!confirm('确定删除这条评价吗？')) return;
+    
+    var token = getToken();
+    if (!token) { alert('请先登录'); return; }
+
+    try {
+      var response = await fetch('/api/reviews/' + reviewId, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      var data = await response.json();
+      if (data.success) {
+        var buildingId = getSceneIdFromUrl();
+        renderReviews(buildingId);
+      } else {
+        alert(data.message || '删除失败');
+      }
+    } catch (err) {
+      alert('网络错误，请重试');
+      console.error(err);
+    }
+  }
+
+  // ---------- 发表评价 ----------
+  var selectedRatingMini = 0;
+
+  function setRatingMini(val) {
+    selectedRatingMini = val;
+    var stars = document.querySelectorAll('#starSelectorMini i');
+    stars.forEach(function(el) {
+      var v = parseInt(el.dataset.val);
+      if (v <= val) { el.className = 'fas fa-star active'; }
+      else { el.className = 'far fa-star'; }
+    });
+    document.getElementById('ratingLabelMini').textContent = val + ' 星';
+  }
+
+  async function submitReviewMini() {
+    var user = getCurrentUser();
+    if (!user) { alert('请先登录'); window.location.href='login.html'; return; }
+
+    var buildingId = parseInt(getSceneIdFromUrl());
+    var rating = selectedRatingMini;
+    var content = document.getElementById('reviewInputMini').value.trim();
+    if (rating === 0) { alert('请选择评分'); return; }
+    if (content.length < 5) { alert('评价内容至少5个字'); return; }
+
+    var token = getToken();
+    if (!token) { alert('请先登录'); return; }
+
+    var btn = document.getElementById('submitReviewMini');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 发布中...';
+
+    try {
+      var response = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({
+          buildingId: buildingId,
+          rating: rating,
+          content: content
+        })
+      });
+      var data = await response.json();
+      if (data.success) {
+        document.getElementById('reviewInputMini').value = '';
+        setRatingMini(0);
+        document.querySelectorAll('#starSelectorMini i').forEach(function(el) {
+          el.className = 'far fa-star';
+        });
+        document.getElementById('ratingLabelMini').textContent = '点击星标评分';
+        renderReviews(buildingId);
+      } else {
+        alert(data.message || '发布失败');
+      }
+    } catch (err) {
+      alert('网络错误，请重试');
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i> 发布评价';
+    }
+  }
+
+  // ---------- 渲染景点信息 ----------
+  function renderScene(building) {
+    if (!building) {
+      document.getElementById('sceneName').textContent = '未找到景点';
+      return;
+    }
+
+    document.getElementById('sceneName').textContent = building.name;
+    document.getElementById('sceneAuthor').textContent = building.author;
+    document.getElementById('sceneDynasty').textContent = building.dynasty;
+    document.getElementById('sceneAuthorLabel').textContent = building.author;
+    document.getElementById('scenePoem').textContent = building.poem || '·';
+    document.getElementById('sceneDesc').textContent = building.desc || '·';
+    document.getElementById('dynastyBadge').textContent = building.dynasty + ' · ' + building.author;
+
+    // ---------- 加载图片 ----------
+    var imageContainer = document.getElementById('sceneImage');
+    var fileName = IMAGE_MAP[building.name];
+    
+    if (fileName) {
+      var imgUrl = 'scene/' + fileName;
+      // 设置背景图片
+      imageContainer.style.backgroundImage = 'url(\'' + imgUrl + '\')';
+      imageContainer.style.backgroundSize = 'cover';
+      imageContainer.style.backgroundPosition = 'center';
+      
+      // 检测图片是否加载成功
+      var testImg = new Image();
+      testImg.onerror = function() {
+        // 图片加载失败，显示占位符
+        imageContainer.style.backgroundImage = 'none';
+        imageContainer.innerHTML = `
+          <div class="img-placeholder">
+            <i class="fas fa-landmark"></i>
+            <span>${building.name}</span>
+          </div>
+        `;
+      };
+      testImg.onload = function() {
+        // 图片加载成功，清空占位
+        imageContainer.innerHTML = '';
+      };
+      testImg.src = imgUrl;
+    } else {
+      // 没有图片映射，显示占位符
+      imageContainer.style.backgroundImage = 'none';
+      imageContainer.innerHTML = `
+        <div class="img-placeholder">
+          <i class="fas fa-landmark"></i>
+          <span>${building.name}</span>
+        </div>
+      `;
+    }
+  }
+
+  // ---------- 用户状态 ----------
+  function updateNavUserStatus() {
+    var container = document.getElementById('navUserStatus');
+    var user = getCurrentUser();
+    if (user) {
+      container.innerHTML = `
+        <a href="profile.html" class="nav-user-avatar" title="个人中心">${user.name.charAt(0).toUpperCase()}</a>
+        <span class="nav-user-name">${user.name}</span>
+        <button class="nav-logout-btn" onclick="handleLogout()"><i class="fas fa-sign-out-alt"></i></button>
+      `;
+      document.getElementById('loginHintMini').innerHTML = '<span style="color:#9a8a7a;">已登录，欢迎评价</span>';
+    } else {
+      container.innerHTML = `
+        <a href="login.html" class="nav-login-link">登录</a>
+        <a href="register.html" class="nav-register-link">注册</a>
+      `;
+      document.getElementById('loginHintMini').innerHTML = '<a href="login.html">登录</a> 后发表评价';
+    }
+  }
+
+  function handleLogout() {
+    if (confirm('确定退出登录吗？')) {
+      logout();
+      updateNavUserStatus();
+      window.location.reload();
+    }
+  }
+
+  // ---------- 初始化 ----------
+  document.addEventListener('DOMContentLoaded', async function() {
+    updateNavUserStatus();
+
+    var id = getSceneIdFromUrl();
+    if (!id) {
+      document.getElementById('sceneName').textContent = '缺少景点ID';
+      return;
+    }
+
+    // 尝试从缓存获取
+    var building = getBuildingById(id);
+    if (building) {
+      renderScene(building);
+      renderReviews(building.id);
+    } else {
+      // 从 API 获取
+      try {
+        var data = await fetchBuildingFromAPI(id);
+        if (data) {
+          renderScene(data);
+          renderReviews(data.id);
+        } else {
+          document.getElementById('sceneName').textContent = '景点不存在';
+        }
+      } catch (err) {
+        document.getElementById('sceneName').textContent = '加载失败';
+        console.error(err);
+      }
+    }
+
+    setRatingMini(0);
+  });
+
+  // 暴露全局
+  window.setRatingMini = setRatingMini;
+  window.submitReviewMini = submitReviewMini;
+  window.handleLikeMini = handleLikeMini;
+  window.reportReviewMini = reportReviewMini;
+  window.deleteReviewMini = deleteReviewMini;
+  window.handleLogout = handleLogout;
+</script>
+</body>
+</html>

@@ -8,16 +8,22 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// 中间件 - 完全禁用 helmet 的 CSP（内容安全策略）
+// 中间件 - 完全禁用 helmet 的 CSP
 app.use(
     helmet({
-        contentSecurityPolicy: false,  // 禁用 CSP
+        contentSecurityPolicy: false,
         crossOriginEmbedderPolicy: false,
         crossOriginOpenerPolicy: false,
         crossOriginResourcePolicy: false,
     })
 );
-app.use(cors());
+
+// CORS 配置 - 允许所有来源（Railway 上需要）
+app.use(cors({
+    origin: '*',
+    credentials: true
+}));
+
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -29,7 +35,7 @@ const limiter = rateLimit({
 });
 app.use('/api', limiter);
 
-// ===== API路由（必须在静态文件之前） =====
+// ===== API路由 =====
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/buildings', require('./routes/buildings'));
 app.use('/api/reviews', require('./routes/reviews'));
@@ -39,7 +45,8 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// ===== 静态文件服务 =====
+// ===== 静态文件服务（前端） =====
+// 注意：Railway 上，前端文件在 ../frontend 目录
 app.use(express.static(path.join(__dirname, '../frontend')));
 
 // ===== 所有非API请求返回前端页面 =====
@@ -47,6 +54,7 @@ app.get('*', (req, res) => {
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ success: false, message: '接口不存在' });
     }
+    // 如果是 /scene/ 开头的图片请求，已经在静态文件中处理了
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 

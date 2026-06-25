@@ -1,4 +1,4 @@
-// data.js - 数据管理（使用后端API）
+// data.js - 数据管理
 
 var API_BASE = '/api';
 

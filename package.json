@@ -1,0 +1,12 @@
+{
+  "name": "shanhegulou",
+  "version": "1.0.0",
+  "description": "山河故楼 - 诗词古建筑地图",
+  "scripts": {
+    "start": "cd backend && npm start",
+    "build": "cd backend && npm install"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="style.css">
     <script src="theme.js"></script>
     <style>
-        /* ... 保持原有样式不变 ... */
         .auth-page {
             min-height: 100vh;
             background: linear-gradient(160deg, #f8f4ee 0%, #efe8df 100%);
@@ -245,30 +244,6 @@
         .auth-back-link:hover {
             color: #b8956a;
         }
-        /* Demo账号提示 */
-        .demo-hint {
-            background: rgba(184, 149, 106, 0.06);
-            border-radius: 10px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            font-size: 0.8rem;
-            color: #9a8a7a;
-            border: 1px solid rgba(184, 149, 106, 0.08);
-        }
-        .demo-hint strong {
-            color: #b8956a;
-        }
-        .demo-hint .demo-item {
-            display: inline-block;
-            margin-right: 12px;
-        }
-        .demo-hint .demo-item code {
-            background: rgba(184, 149, 106, 0.1);
-            padding: 1px 8px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            color: #5a4a3a;
-        }
         @media (max-width: 480px) {
             .auth-container {
                 padding: 28px 20px 24px;
@@ -315,18 +290,6 @@
             border-color: #c9a87b;
             color: #c9a87b;
         }
-        body.dark-theme .demo-hint {
-            background: rgba(255, 255, 255, 0.02);
-            border-color: rgba(255, 255, 255, 0.04);
-            color: rgba(255, 255, 255, 0.4);
-        }
-        body.dark-theme .demo-hint strong {
-            color: #c9a87b;
-        }
-        body.dark-theme .demo-hint .demo-item code {
-            background: rgba(255, 255, 255, 0.06);
-            color: rgba(255, 255, 255, 0.6);
-        }
     </style>
 </head>
 <body>
@@ -340,13 +303,6 @@
                 <div class="logo"><i class="fas fa-landmark"></i></div>
                 <h1>欢迎回来</h1>
                 <p>登录您的山河故楼账号</p>
-            </div>
-
-            <div class="demo-hint">
-                <i class="fas fa-info-circle" style="color:#b8956a;margin-right:4px;"></i>
-                测试账号：
-                <span class="demo-item"><strong>诗仙李白</strong> <code>libai@example.com</code> / <code>libai123</code></span>
-                <span class="demo-item"><strong>建筑学者</strong> <code>scholar@example.com</code> / <code>scholar123</code></span>
             </div>
 
             <div id="authError" class="auth-error"></div>
@@ -409,7 +365,6 @@
             }
         }
 
-        // ===== 修复：正确调用 async loginUser =====
         async function handleLogin(e) {
             e.preventDefault();
             var email = document.getElementById('loginEmail').value.trim();
@@ -445,7 +400,7 @@
                     btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
                 }
             } catch (err) {
-                errorEl.textContent = '网络错误，请确保后端服务已启动 (http://localhost:3000)';
+                errorEl.textContent = '网络错误，请稍后重试';
                 errorEl.classList.add('show');
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> 登录';
@@ -453,26 +408,9 @@
             }
         }
 
-        // 如果已登录，跳转到首页
         if (getCurrentUser()) {
             window.location.href = 'index.html';
         }
-
-        // 快捷填充测试账号
-        document.addEventListener('DOMContentLoaded', function() {
-            var demoItems = document.querySelectorAll('.demo-item strong');
-            demoItems.forEach(function(item) {
-                item.style.cursor = 'pointer';
-                item.addEventListener('click', function() {
-                    var parent = this.closest('.demo-item');
-                    var codeEls = parent.querySelectorAll('code');
-                    if (codeEls.length >= 2) {
-                        document.getElementById('loginEmail').value = codeEls[0].textContent;
-                        document.getElementById('loginPassword').value = codeEls[1].textContent;
-                    }
-                });
-            });
-        });
     </script>
 </body>
 </html>

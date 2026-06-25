@@ -1,4 +1,4 @@
-// auth.js - 认证管理（使用后端API）
+// auth.js - 认证管理
 
 // ===== 用户管理 =====
 function getCurrentUser() {
@@ -33,7 +33,6 @@ function setToken(token) {
 function logout() {
     localStorage.removeItem('currentUser');
     localStorage.removeItem('token');
-    // 刷新页面更新状态
     if (typeof updateNavUserStatus === 'function') {
         updateNavUserStatus();
     }
@@ -60,7 +59,8 @@ function saveUsers(users) {
     localStorage.setItem('users', JSON.stringify(users));
 }
 
-// ===== API调用 =====
+// ===== API调用 - 使用相对路径 =====
+// Railway 上使用相对路径，自动适配
 var API_BASE = '/api';
 
 async function registerUser(name, email, password) {
@@ -80,7 +80,7 @@ async function registerUser(name, email, password) {
         }
     } catch (err) {
         console.error('注册错误:', err);
-        return { success: false, error: '网络错误，请确保后端服务已启动' };
+        return { success: false, error: '网络错误，请稍后重试' };
     }
 }
 
@@ -101,7 +101,7 @@ async function loginUser(email, password) {
         }
     } catch (err) {
         console.error('登录错误:', err);
-        return { success: false, error: '网络错误，请确保后端服务已启动' };
+        return { success: false, error: '网络错误，请稍后重试' };
     }
 }
 
@@ -187,7 +187,7 @@ async function deleteAccount(password) {
     }
 }
 
-// ===== 初始化本地Demo用户（保留兼容） =====
+// ===== 初始化本地Demo用户 =====
 function initDemoUsers() {
     var users = getUsers();
     if (users.length === 0) {

@@ -8,7 +8,6 @@ const dbDir = process.env.RAILWAY_VOLUME_MOUNT_PATH
     ? process.env.RAILWAY_VOLUME_MOUNT_PATH 
     : path.join(__dirname, '../');
 
-// 确保目录存在
 if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
 }
@@ -20,16 +19,19 @@ console.log('📂 数据库路径:', dbPath);
 let db = null;
 let SQL = null;
 
-// ===== 数据库操作封装 =====
+// ===== 修复：dbGet 正确返回 undefined =====
 function dbGet(sql, params = []) {
     try {
         const stmt = db.prepare(sql);
-        const result = stmt.getAsObject(params);
-        stmt.free();
-        // 如果结果为空对象（没有数据），返回 undefined
-        if (Object.keys(result).length === 0) {
-            return undefined;
+        stmt.bind(params);
+        // 检查是否有数据
+        if (!stmt.step()) {
+            stmt.free();
+            return undefined;  // ← 关键修复：没有数据返回 undefined
         }
+        // 获取结果
+        const result = stmt.getAsObject();
+        stmt.free();
         return result;
     } catch (err) {
         console.error('dbGet 错误:', err.message);
@@ -58,18 +60,15 @@ function dbRun(sql, params = []) {
         const stmt = db.prepare(sql);
         stmt.bind(params);
         stmt.step();
-        const lastID = stmt.getColumnNames().length > 0 ? stmt.get(0) : null;
         stmt.free();
-        // 保存数据库到文件
         saveDatabase();
-        return { lastID: lastID || Date.now(), changes: 1 };
+        return { lastID: Date.now(), changes: 1 };
     } catch (err) {
         console.error('dbRun 错误:', err.message);
         return { lastID: null, changes: 0 };
     }
 }
 
-// ===== 保存数据库到文件 =====
 function saveDatabase() {
     try {
         if (db) {
@@ -86,7 +85,6 @@ function saveDatabase() {
 async function initDatabase() {
     console.log('📦 初始化数据库...');
     
-    // 读取或创建数据库文件
     let dbData = null;
     if (fs.existsSync(dbPath)) {
         try {
@@ -99,11 +97,10 @@ async function initDatabase() {
         console.log('📝 创建新数据库文件');
     }
 
-    // 初始化 sql.js
     SQL = await initSqlJs();
     db = new SQL.Database(dbData);
 
-    // 创建表（如果不存在）
+    // 创建表
     db.exec(`
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
@@ -148,11 +145,8 @@ async function initDatabase() {
 
     // 检查并插入默认数据
     try {
-        const buildingResult = db.exec('SELECT COUNT(*) as count FROM buildings');
-        const count = buildingResult.length > 0 && buildingResult[0].values.length > 0 
-            ? buildingResult[0].values[0][0] 
-            : 0;
-        
+        const result = db.exec('SELECT COUNT(*) as count FROM buildings');
+        const count = result.length > 0 && result[0].values.length > 0 ? result[0].values[0][0] : 0;
         if (count === 0) {
             console.log('📦 插入默认建筑数据...');
             insertDefaultBuildings();
@@ -164,22 +158,18 @@ async function initDatabase() {
     }
 
     try {
-        const userResult = db.exec('SELECT COUNT(*) as count FROM users WHERE id = "demo1"');
-        const userCount = userResult.length > 0 && userResult[0].values.length > 0 
-            ? userResult[0].values[0][0] 
-            : 0;
-        
-        if (userCount === 0) {
+        const result = db.exec('SELECT COUNT(*) as count FROM users');
+        const count = result.length > 0 && result[0].values.length > 0 ? result[0].values[0][0] : 0;
+        if (count === 0) {
             console.log('👤 插入默认用户...');
             insertDemoUsers();
         } else {
-            console.log('👤 默认用户已存在');
+            console.log(`👤 已有 ${count} 个用户`);
         }
     } catch (err) {
         console.error('检查用户数据失败:', err.message);
     }
 
-    // 保存到文件
     saveDatabase();
     console.log('✅ 数据库初始化完成');
 }
@@ -292,7 +282,6 @@ async function getDB() {
     return { db, dbGet, dbAll, dbRun, saveDatabase };
 }
 
-// ===== 导出 =====
 module.exports = { 
     getDB,
     dbGet, 

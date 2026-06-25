@@ -1,6 +1,7 @@
-const path = require('path');
 const fs = require('fs');
+const path = require('path');
 const bcrypt = require('bcryptjs');
+const initSqlJs = require('sql.js');
 
 // ===== 数据库路径 =====
 const dbDir = process.env.RAILWAY_VOLUME_MOUNT_PATH 
@@ -14,38 +15,56 @@ if (!fs.existsSync(dbDir)) {
 const dbPath = path.join(dbDir, 'data.db');
 console.log('📂 数据库路径:', dbPath);
 
-// ===== 使用 better-sqlite3 =====
-const Database = require('better-sqlite3');
-
-let db;
-try {
-    db = new Database(dbPath);
-    console.log('✅ 数据库连接成功');
-} catch (err) {
-    console.error('❌ 数据库连接失败:', err.message);
-    process.exit(1);
-}
+// ===== 数据库实例 =====
+let db = null;
+let SQL = null;
 
 // ===== 数据库操作封装 =====
 function dbGet(sql, params = []) {
     const stmt = db.prepare(sql);
-    return stmt.get(...params);
+    const result = stmt.getAsObject(params);
+    stmt.free();
+    return result;
 }
 
 function dbAll(sql, params = []) {
     const stmt = db.prepare(sql);
-    return stmt.all(...params);
+    const results = [];
+    stmt.bind(params);
+    while (stmt.step()) {
+        results.push(stmt.getAsObject());
+    }
+    stmt.free();
+    return results;
 }
 
 function dbRun(sql, params = []) {
     const stmt = db.prepare(sql);
-    const result = stmt.run(...params);
-    return { lastID: result.lastInsertRowid, changes: result.changes };
+    stmt.bind(params);
+    stmt.step();
+    const lastID = stmt.getColumnNames().length > 0 ? stmt.get(0) : null;
+    stmt.free();
+    return { lastID: lastID || Date.now(), changes: 1 };
 }
 
-// ===== 初始化数据库表 =====
-function initDatabase() {
-    // 用户表
+// ===== 初始化数据库 =====
+async function initDatabase() {
+    console.log('📦 初始化数据库...');
+    
+    // 读取或创建数据库文件
+    let dbData = null;
+    if (fs.existsSync(dbPath)) {
+        dbData = fs.readFileSync(dbPath);
+        console.log('📂 读取已有数据库文件');
+    } else {
+        console.log('📝 创建新数据库文件');
+    }
+
+    // 初始化 sql.js
+    SQL = await initSqlJs();
+    db = new SQL.Database(dbData);
+
+    // 创建表
     db.exec(`
         CREATE TABLE IF NOT EXISTS users (
             id TEXT PRIMARY KEY,
@@ -57,9 +76,7 @@ function initDatabase() {
             favorites TEXT DEFAULT '[]'
         )
     `);
-    console.log('✅ 用户表已就绪');
 
-    // 建筑表
     db.exec(`
         CREATE TABLE IF NOT EXISTS buildings (
             id INTEGER PRIMARY KEY,
@@ -72,9 +89,7 @@ function initDatabase() {
             lat REAL
         )
     `);
-    console.log('✅ 建筑表已就绪');
 
-    // 评价表
     db.exec(`
         CREATE TABLE IF NOT EXISTS reviews (
             id TEXT PRIMARY KEY,
@@ -86,28 +101,44 @@ function initDatabase() {
             rating INTEGER NOT NULL,
             content TEXT NOT NULL,
             likes TEXT DEFAULT '[]',
-            created_at TEXT NOT NULL,
-            FOREIGN KEY (user_id) REFERENCES users(id),
-            FOREIGN KEY (building_id) REFERENCES buildings(id)
+            created_at TEXT NOT NULL
         )
     `);
-    console.log('✅ 评价表已就绪');
+
+    console.log('✅ 所有表已就绪');
 
     // 检查并插入默认数据
-    const buildingCount = db.prepare('SELECT COUNT(*) as count FROM buildings').get();
-    if (buildingCount.count === 0) {
+    const buildingCount = db.exec('SELECT COUNT(*) as count FROM buildings');
+    const count = buildingCount.length > 0 ? buildingCount[0].values[0][0] : 0;
+    
+    if (count === 0) {
         console.log('📦 插入默认建筑数据...');
         insertDefaultBuildings();
     } else {
-        console.log(`📊 已有 ${buildingCount.count} 条建筑数据`);
+        console.log(`📊 已有 ${count} 条建筑数据`);
     }
 
-    const userCount = db.prepare('SELECT COUNT(*) as count FROM users WHERE id = "demo1"').get();
-    if (userCount.count === 0) {
+    const userResult = db.exec('SELECT COUNT(*) as count FROM users WHERE id = "demo1"');
+    const userCount = userResult.length > 0 ? userResult[0].values[0][0] : 0;
+    
+    if (userCount === 0) {
         console.log('👤 插入默认用户...');
         insertDemoUsers();
     } else {
         console.log('👤 默认用户已存在');
+    }
+
+    // 保存到文件
+    saveDatabase();
+    console.log('✅ 数据库初始化完成');
+}
+
+// ===== 保存数据库到文件 =====
+function saveDatabase() {
+    if (db) {
+        const data = db.export();
+        fs.writeFileSync(dbPath, data);
+        console.log('💾 数据库已保存');
     }
 }
 
@@ -169,13 +200,9 @@ function insertDefaultBuildings() {
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const insertMany = db.transaction((buildings) => {
-        for (const b of buildings) {
-            insert.run(b.id, b.name, b.dynasty, b.author, b.poem, b.description, b.lng, b.lat);
-        }
-    });
-
-    insertMany(buildings);
+    for (const b of buildings) {
+        insert.run([b.id, b.name, b.dynasty, b.author, b.poem, b.description, b.lng, b.lat]);
+    }
     console.log('✅ 默认建筑数据已插入 (' + buildings.length + ' 条)');
 }
 
@@ -198,18 +225,29 @@ function insertDemoUsers() {
         VALUES (?, ?, ?, ?, ?, ?, ?)
     `);
 
-    const insertMany = db.transaction((users) => {
-        for (const u of users) {
-            insert.run(u.id, u.name, u.email, u.password, u.avatar, u.join_date, u.favorites);
-        }
-    });
-
-    insertMany(users);
+    for (const u of users) {
+        insert.run([u.id, u.name, u.email, u.password, u.avatar, u.join_date, u.favorites]);
+    }
     console.log('✅ 默认用户已插入');
 }
 
-// ===== 初始化 =====
-initDatabase();
+// ===== 初始化数据库 =====
+let initialized = false;
+
+async function getDB() {
+    if (!initialized) {
+        await initDatabase();
+        initialized = true;
+    }
+    return { db, dbGet, dbAll, dbRun, saveDatabase };
+}
 
 // ===== 导出 =====
-module.exports = { db, dbGet, dbAll, dbRun };
+module.exports = { 
+    getDB,
+    dbGet, 
+    dbAll, 
+    dbRun, 
+    saveDatabase,
+    initDatabase 
+};

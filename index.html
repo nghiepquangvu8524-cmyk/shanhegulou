@@ -318,16 +318,16 @@
   </div>
 </footer>
 
-<script>
-  // ===== 导航用户状态 =====
-  function getCurrentUser() { return null; }
-  function getReviews() { return [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }]; }
-  function getUsers() { return [{ id: 1 }, { id: 2 }, { id: 3 }]; }
-  function logout() { console.log('已登出'); }
+<!-- 引入 auth.js 和 data.js -->
+<script src="auth.js"></script>
+<script src="data.js"></script>
 
+<script>
+  // ===== 导航用户状态（使用 auth.js 中的函数） =====
   function updateNavUserStatus() {
     var container = document.getElementById('navUserStatus');
-    var user = getCurrentUser();
+    var user = getCurrentUser();  // 现在会调用 auth.js 中的函数
+
     if (user) {
       container.innerHTML = `
         <a href="profile.html" class="nav-user-avatar" title="个人中心">${user.name.charAt(0).toUpperCase()}</a>
@@ -344,7 +344,7 @@
 
   function handleLogout() {
     if (confirm('确定要退出登录吗？')) {
-      logout();
+      logout();  // 使用 auth.js 中的 logout 函数
       updateNavUserStatus();
       window.location.reload();
     }
@@ -376,6 +376,7 @@
     initCarousel();
   });
 
+  // 暴露全局函数
   window.handleLogout = handleLogout;
   window.updateNavUserStatus = updateNavUserStatus;
 </script>
